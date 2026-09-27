@@ -40,10 +40,15 @@
             var lat = position.coords.latitude;
             var lon = position.coords.longitude;
             
-            liff.sendMessages([{
-              type: 'text',
-              text: '📍真實定位打卡 ' + lat + ',' + lon
-            }]).then(function() {
+            // 抓取當下時間，並將座標與時間打包成 Base64 加密亂碼
+         var now = Date.now();
+         var payload = lat + "," + lon + "," + now;
+         var encodedCode = btoa(payload); 
+
+         liff.sendMessages([{
+           type: 'text',
+           text: '📍系統定位打卡\n[驗證碼:' + encodedCode + ']'
+         }]).then(function() {
               liff.closeWindow(); // 瞬間關閉視窗
             }).catch(function(error) {
               showMsg('❌ 傳送訊息失敗：' + error);

@@ -16,7 +16,7 @@
   <div class="loader" id="loader"></div>
   
   <script>
-    var myLiffId = '2011762199-lFOC9rqY';
+    var myLiffId = '2011762199-lFOC9rqY'; // ⚠️記得換成第二家店的 LIFF ID！
 
     function showMsg(text) {
       document.getElementById('msg').innerText = text;
@@ -33,25 +33,31 @@
         
         document.getElementById('msg').innerText = "✅ 系統連線成功，等待手機 GPS 授權...";
         
-        // 呼叫手機最底層 GPS
         navigator.geolocation.getCurrentPosition(
           function(position) {
             document.getElementById('msg').innerText = "✅ 成功抓到座標！正在傳送打卡...";
             var lat = position.coords.latitude;
             var lon = position.coords.longitude;
             
-            // 抓取當下時間，並將座標與時間打包成 Base64 加密亂碼
-         var now = Date.now();
-         var payload = lat + "," + lon + "," + now;
-         var encodedCode = btoa(payload); 
-
-         liff.sendMessages([{
-           type: 'text',
-           text: '📍系統定位打卡\n[驗證碼:' + encodedCode + ']'
-         }]).then(function() {
-              liff.closeWindow(); // 瞬間關閉視窗
+            // Base64 加密防弊機制
+            var now = Date.now();
+            var payload = lat + "," + lon + "," + now;
+            var encodedCode = btoa(payload); 
+            
+            liff.sendMessages([{
+              type: 'text',
+              text: '📍系統定位打卡\n[驗證碼:' + encodedCode + ']'
+            }]).then(function() {
+              liff.closeWindow(); 
             }).catch(function(error) {
-              showMsg('❌ 傳送訊息失敗：' + error);
+              // 🚨 破解 revoked 錯誤的核心機制 🚨
+              if (String(error).indexOf('revoked') !== -1) {
+                liff.logout(); // 強制清除手機裡的舊通行證
+                alert('♻️ 系統已自動清除舊憑證！請按下確定，然後「再點擊一次」打卡按鈕即可！');
+                liff.closeWindow();
+              } else {
+                showMsg('❌ 傳送訊息失敗：' + error);
+              }
             });
           },
           function(error) {

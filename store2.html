@@ -50,10 +50,11 @@
             }]).then(function() {
               liff.closeWindow(); 
             }).catch(function(error) {
-              // 🚨 破解 revoked 錯誤的核心機制 🚨
-              if (String(error).indexOf('revoked') !== -1) {
-                liff.logout(); // 強制清除手機裡的舊通行證
-                alert('♻️ 系統已自動清除舊憑證！請按下確定，然後「再點擊一次」打卡按鈕即可！');
+              // 🚨 破解所有權限與憑證錯誤的核心機制 🚨
+              var errStr = String(error).toLowerCase();
+              if (errStr.indexOf('revoked') !== -1 || errStr.indexOf('permission') !== -1 || errStr.indexOf('grant') !== -1) {
+                liff.logout(); // 強制清除手機底層的最深暫存
+                alert('♻️ 系統偵測到權限需更新，已自動為您清除舊憑證！\n請按下確定，然後「再點擊一次」打卡按鈕即可！');
                 liff.closeWindow();
               } else {
                 showMsg('❌ 傳送訊息失敗：' + error);
